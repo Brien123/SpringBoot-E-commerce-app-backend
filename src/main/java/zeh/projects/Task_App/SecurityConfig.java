@@ -1,5 +1,6 @@
 package zeh.projects.Task_App;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -10,10 +11,16 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import zeh.projects.Task_App.users.JwtAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    @Autowired
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -31,7 +38,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/users/signup", "/users/login").permitAll()
                         .anyRequest().authenticated()
-                );
+                )
+                // Add the JWT filter before the UsernamePasswordAuthenticationFilter
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
