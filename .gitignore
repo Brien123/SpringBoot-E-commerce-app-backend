@@ -1,0 +1,84 @@
+# Compiled class file
+*.class
+
+# Log file
+*.log
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+# Gradle or Maven build directories
+build/
+target/
+bin/
+.gradle/
+.mvn/wrapper/
+
+# Intellij IDEA related files
+.idea/
+*.iws
+*.iml
+*.ipr
+*.iws
+
+# Eclipse related files
+.classpath
+.project
+.settings/
+.factorypath
+.apt_generated/
+
+# NetBeans
+nbproject/private/
+nbbuild/
+dist/
+build/
+
+# VS Code
+.vscode/
+
+# STS (Spring Tool Suite)
+.springBeans
+
+# OS generated files #
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Environment specific files
+.env
+*.properties # If you have sensitive properties, consider encrypting them or using environment variables.
+
+# Keystore files
+*.jks
+*.keystore
+
+# Temporary files
+*.tmp
+*.bak
+
+# Dependency related files
+.m2/
+node_modules/ # If you have a frontend inside your project
+
+# Docker related files, if you don't want to commit build artifacts
+Dockerfile*
+docker-compose*
+*.tar.gz
+
+# If using H2 database, exclude the database file
+*.mv.db
+*.trace.db
+
