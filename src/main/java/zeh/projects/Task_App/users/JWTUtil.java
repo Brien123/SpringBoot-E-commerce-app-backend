@@ -3,7 +3,9 @@ package zeh.projects.Task_App.users;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 import zeh.projects.Task_App.users.models.Role;
@@ -16,8 +18,16 @@ import java.util.stream.Collectors;
 
 @Component
 public class JWTUtil {
-    private final SecretKey SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+//    private final SecretKey SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    private final SecretKey SECRET_KEY;
+
     private final long EXPIRATION_TIME = 86400000; // 24 hours
+
+    public JWTUtil() {
+        String secret = "c159T0fP7LfNLWaw0EwVi/llEIBGiF68ZK9f2w2gexg=";
+        byte[] keyBytes = Decoders.BASE64.decode(secret);
+        this.SECRET_KEY = Keys.hmacShaKeyFor(keyBytes);
+    }
 
     public String generateToken(String username, Set<Role> roles) {
         List<String> roleNames = roles.stream()
@@ -45,12 +55,21 @@ public class JWTUtil {
         return extractUsername(token).equals(username) && !isTokenExpired(token);
     }
 
+//    private Claims getClaims(String token) {
+//        return Jwts.parser()
+//                .setSigningKey(SECRET_KEY)
+//                .parseClaimsJws(token)
+//                .getBody();
+//    }
+
     private Claims getClaims(String token) {
-        return Jwts.parser()
-                .setSigningKey(SECRET_KEY)
+        return Jwts.parserBuilder()
+                .setSigningKey(SECRET_KEY) // Use parserBuilder()
+                .build() // Build the parser
                 .parseClaimsJws(token)
                 .getBody();
     }
+
 
     private boolean isTokenExpired(String token) {
         return getClaims(token).getExpiration().before(new Date());

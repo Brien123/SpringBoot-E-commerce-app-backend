@@ -113,6 +113,7 @@ public class userService {
             if (user == null) {
                 throw new EntityNotFoundException("User not found with username: " + name);
             }
+            System.out.println(user);
             return userMapper.userToUserResponseDto(user);
         } catch (Exception e) {
             throw new RuntimeException(e);

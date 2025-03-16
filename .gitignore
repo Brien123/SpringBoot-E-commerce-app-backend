@@ -82,3 +82,4 @@ docker-compose*
 *.mv.db
 *.trace.db
 
+/uploads
