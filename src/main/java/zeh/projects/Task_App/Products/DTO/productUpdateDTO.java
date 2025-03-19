@@ -9,7 +9,7 @@ public class productUpdateDTO {
     private String name;
     private String description;
     private Double price;
-    private Category category;
+    private Long category_id;
     private Boolean available;
     private MultipartFile image;
 }

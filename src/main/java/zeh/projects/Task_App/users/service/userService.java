@@ -1,6 +1,7 @@
 package zeh.projects.Task_App.users.service;
 
 import jakarta.persistence.EntityNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -19,10 +20,13 @@ import zeh.projects.Task_App.users.JWTUtil;
 import zeh.projects.Task_App.users.models.Role;
 import zeh.projects.Task_App.users.models.User;
 import zeh.projects.Task_App.users.userMapper;
+import zeh.projects.Task_App.users.usersMapper;
 
 import java.util.*;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class userService {
 
@@ -43,6 +47,9 @@ public class userService {
 
     @Autowired
     private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private usersMapper usersMapper;
 
     public userResponseDTO create(userRegistrationDTO userRegistrationDTO){
         if(userDAO.existsByUsername(userRegistrationDTO.getUsername())){
@@ -72,7 +79,7 @@ public class userService {
         user.setRoles(roles);
 
         userDAO.save(user);
-        return userMapper.userToUserResponseDto(user);
+        return usersMapper.toDTO(user);
     }
 
     public userResponseDTO update(long id, userUpdateDTO updateDTO){
@@ -104,7 +111,7 @@ public class userService {
         }
 
         userDAO.save(user);
-        return userMapper.userToUserResponseDto(user);
+        return usersMapper.toDTO(user);
     }
 
     public userResponseDTO get(String name){
@@ -114,7 +121,7 @@ public class userService {
                 throw new EntityNotFoundException("User not found with username: " + name);
             }
             System.out.println(user);
-            return userMapper.userToUserResponseDto(user);
+            return usersMapper.toDTO(user);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -134,7 +141,7 @@ public class userService {
 
     public  Iterable<userResponseDTO> get(){
         return userDAO.findAll().stream()
-                .map(userMapper::userToUserResponseDto)
+                .map(usersMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
@@ -160,7 +167,8 @@ public class userService {
             SecurityContextHolder.getContext().setAuthentication(authToken);
 
             String token = jwtUtil.generateToken(username, user.getRoles());
-            return new loginResponseDTO(userMapper.userToUserResponseDto(user), token);
+
+            return new loginResponseDTO(usersMapper.toDTO(user), token);
         } catch (Exception e) {
 
             System.err.println("Login error: " + e.getClass().getName() + ": " + e.getMessage());

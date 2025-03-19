@@ -29,7 +29,6 @@ public class userController {
     public ResponseEntity<userResponseDTO> profile() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String username = authentication.getName();
-        System.out.println(username);
         return ResponseEntity.ok(userService.get(username));
     }
 

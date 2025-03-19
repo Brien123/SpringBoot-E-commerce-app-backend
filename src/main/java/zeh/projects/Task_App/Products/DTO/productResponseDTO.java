@@ -12,4 +12,5 @@ public class productResponseDTO {
     private boolean available;
     private String image_url;
     private long user_id;
+    private String category_name;
 }

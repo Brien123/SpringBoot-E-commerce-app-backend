@@ -55,12 +55,6 @@ public class JWTUtil {
         return extractUsername(token).equals(username) && !isTokenExpired(token);
     }
 
-//    private Claims getClaims(String token) {
-//        return Jwts.parser()
-//                .setSigningKey(SECRET_KEY)
-//                .parseClaimsJws(token)
-//                .getBody();
-//    }
 
     private Claims getClaims(String token) {
         return Jwts.parserBuilder()

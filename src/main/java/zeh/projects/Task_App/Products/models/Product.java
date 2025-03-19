@@ -4,6 +4,10 @@ import jakarta.persistence.*;
 import lombok.Data;
 import zeh.projects.Task_App.users.models.User;
 
+import java.util.Date;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 @Entity
 @Data
 @Table(name = "products")
@@ -21,9 +25,6 @@ public class Product {
     @Column(unique = false, nullable = false)
     private Double price;
 
-//    @ManyToOne(fetch = FetchType.EAGER)
-//    @JoinColumn(name = "category_id", nullable = false)
-//    private long category_id;
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
@@ -37,5 +38,13 @@ public class Product {
 
     @Column(unique = false, nullable = false)
     private String image_url;
+
+    @CreationTimestamp
+    @Column(updatable = false)
+    private Date createdAt;
+
+    @UpdateTimestamp
+    @Column()
+    private Date updatedAt;
 
 }

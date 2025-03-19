@@ -12,17 +12,16 @@ import zeh.projects.Task_App.Products.DTO.productResponseDTO;
 import zeh.projects.Task_App.Products.DTO.productUpdateDTO;
 import zeh.projects.Task_App.Products.models.Category;
 import zeh.projects.Task_App.Products.models.Product;
-//import zeh.projects.Task_App.Products.productMapper;
 import zeh.projects.Task_App.Products.utils.ProductMapper;
 import zeh.projects.Task_App.Utils.ImageUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import zeh.projects.Task_App.users.DAO.userDAO;
 import zeh.projects.Task_App.users.models.User;
+import zeh.projects.Task_App.Elasticsearch.service.IndexingService;
 
 import java.io.IOException;
 import java.util.List;
-
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -37,21 +36,17 @@ public class productService {
     @Autowired
     private ImageUtils imageUtils;
 
-//    @Autowired
-//    private productMapper productMapper;
-
     @Autowired
     private userDAO userDAO;
 
     @Autowired
     private ProductMapper productsMapper;
 
-    public productResponseDTO create(productCreateDTO productCreateDTO) throws IOException {
+    @Autowired
+    private IndexingService indexingService;
+
+    public productResponseDTO create(productCreateDTO productCreateDTO, User user) throws IOException {
         try{
-            User user = userDAO.findById(productCreateDTO.getUser_id()).orElseThrow(() -> new EntityNotFoundException("User not found"));
-            if(user==null){
-                throw new EntityNotFoundException("user not found");
-            }
             Category category = categoryDAO.findById(productCreateDTO.getCategory_id());
 
             if(category==null){
@@ -59,6 +54,7 @@ public class productService {
             }
             Product product = productsMapper.toEntity(productCreateDTO, user, category);
             productDAO.save(product);
+            indexingService.indexProduct(product);
             return productsMapper.toDTO(product);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -78,9 +74,10 @@ public class productService {
     }
 
     public List<productResponseDTO> getAllProducts(User user, int page) {
+        int updated_page = page - 1;
         try {
             int pageSize = 20;
-            Pageable pageable = PageRequest.of(page, pageSize);
+            Pageable pageable = PageRequest.of(updated_page, pageSize);
             Page<Product> productPage = productDAO.findByUser(user, pageable);
 
             return productPage.getContent()
@@ -92,25 +89,47 @@ public class productService {
         }
     }
 
-    public productResponseDTO update(long id, long user_id, productUpdateDTO productUpdateDTO) {
-        Product product = productDAO.findById(id);
-        if(product==null){
-            throw new EntityNotFoundException("Product now found");
+    public productResponseDTO update(productUpdateDTO productUpdateDTO, long id, User user) throws IOException{
+        try {
+            Product product = productDAO.findById(id);
+            if (product == null) {
+                throw new EntityNotFoundException("Product not found");
+            }
+
+            if (!product.getUser().getId().equals(user.getId())) {
+                throw new RuntimeException("User not authorized to update this product");
+            }
+
+            Product updatedProduct = productsMapper.updateEntity(id, productUpdateDTO);
+            productDAO.save(updatedProduct);
+            indexingService.updateProduct(updatedProduct);
+            return productsMapper.toDTO(updatedProduct);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
+    }
 
-        User user = userDAO.findById(user_id)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+    public String delete(long id, String username){
+        try {
+            Product product = productDAO.findById(id);
+            User user = userDAO.findByUsername(username);
+            if(user==null){
+                throw new EntityNotFoundException("User not found");
+            }
 
-        if (!product.getUser().getId().equals(user.getId())) {
-            throw new RuntimeException("User not authorized to update this product");
+            if (product == null) {
+                throw new EntityNotFoundException("Product now found");
+            }
+            if (!product.getUser().getId().equals(user.getId())) {
+                throw new RuntimeException("User not authorized to update this product");
+            }
+
+            productDAO.delete(product);
+            indexingService.updateProduct(product);
+            return "Product deleted successfully";
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-
-
-
-        productsMapper.updateEntity(product, productUpdateDTO);
-        productDAO.save(product);
-
-        return productsMapper.toDTO(product);
     }
 
 
